@@ -14,6 +14,7 @@ Build the zips with `./build.sh` (output in `out/`), then install them with `mag
 On this watch the Play Store kept three processes alive (about 190 MB) because Wear OS whitelists it for power save and it runs several background services.
 
 - `system/etc/sysconfig/clockwork.xml` overlays the system file of the same name, without the `allow-in-power-save-except-idle` entry for `com.android.vending`. **The overlay replaces the whole file**: it is a copy of the file from `R870XXS2JZG3` with one line removed. On other firmware, take that firmware's own file and remove the same line, or the overlay will drop or add unrelated entries.
+- `clockwork.xml` is derived from the original Samsung firmware. Its copyright ownership and license have not been established; rights may belong to Samsung and other respective rights holders.
 - `service.sh`, after boot: disables the quick-launch, cross-profile and multi-user components of the Play Store, sets `RUN_ANY_IN_BACKGROUND` and `RUN_IN_BACKGROUND` to `ignore`, puts it in the `rare` standby bucket and stops it.
 - `uninstall.sh` re-enables the components and the app ops.
 
