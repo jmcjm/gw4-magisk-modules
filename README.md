@@ -1,6 +1,6 @@
 # Magisk modules for the Galaxy Watch 4 (SM-R870)
 
-Small Magisk modules used on a rooted Galaxy Watch 4 (SM-R870, One UI 8 Watch, firmware `R870XXS2JZG3`).
+Small Magisk modules used on a rooted Galaxy Watch 4 (SM-R870). Used on One UI 8 Watch (`R870XXS2JZG3`) and One UI 6 Watch (`R870XXU1IYI1`).
 
 | Module | What it does |
 |---|---|
@@ -13,8 +13,7 @@ Build the zips with `./build.sh` (output in `out/`), then install them with `mag
 
 On this watch the Play Store kept three processes alive (about 190 MB) because Wear OS whitelists it for power save and it runs several background services.
 
-- `system/etc/sysconfig/clockwork.xml` overlays the system file of the same name, without the `allow-in-power-save-except-idle` entry for `com.android.vending`. **The overlay replaces the whole file**: it is a copy of the file from `R870XXS2JZG3` with one line removed. On other firmware, take that firmware's own file and remove the same line, or the overlay will drop or add unrelated entries.
-- `clockwork.xml` is derived from the original Samsung firmware. Its copyright ownership and license have not been established; rights may belong to Samsung and other respective rights holders.
+- `customize.sh`, at installation: copies the firmware's own `/system/etc/sysconfig/clockwork.xml` into the module without the `allow-in-power-save-except-idle` entry for `com.android.vending`. Magisk then overlays the system file with that copy. The file differs between firmware versions (`R870XXS2JZG3` and `R870XXU1IYI1` differ in several broadcast entries), so it is built on the watch instead of being shipped. After a firmware update, reinstall the module.
 - `service.sh`, after boot: disables the quick-launch, cross-profile and multi-user components of the Play Store, sets `RUN_ANY_IN_BACKGROUND` and `RUN_IN_BACKGROUND` to `ignore`, puts it in the `rare` standby bucket and stops it.
 - `uninstall.sh` re-enables the components and the app ops.
 

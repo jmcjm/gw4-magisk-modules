@@ -10,6 +10,4 @@ The full license text is in [`COPYING`](COPYING).
 
 SPDX-License-Identifier: `GPL-3.0-or-later`
 
-## Exception: firmware-derived file
-
-`vending-trim/system/etc/sysconfig/clockwork.xml` is **not** covered by this license. It is a copy of the file shipped in Samsung firmware `R870XXS2JZG3` with one line removed. Its copyright ownership and license have not been established; rights may belong to Samsung, Google and other respective rights holders. It is included only so the module works as an overlay on that firmware.
+The repository contains no firmware files. `vending-trim` builds its `clockwork.xml` overlay on the watch at installation, from the Samsung file of the installed firmware; that generated file is not covered by this license.
