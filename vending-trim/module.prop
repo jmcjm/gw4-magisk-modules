@@ -1,0 +1,6 @@
+id=vending-trim
+name=Play Store trim (Wear OS)
+version=1.0
+versionCode=1
+author=jmc
+description=Removes Play Store from the power-save whitelist, restricts its background execution and disables its quick_launch, cross-profile and multi-user components. GMS is left untouched.
