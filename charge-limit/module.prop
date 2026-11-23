@@ -1,0 +1,6 @@
+id=charge-limit
+name=Charge limit (Wear OS)
+version=1.0
+versionCode=1
+author=jmc
+description=Stops charging at a set level (default 90%) and resumes below a lower one (default 85%), driven by kernel battery events. Settings in /data/adb/charge-limit/config.

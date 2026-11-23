@@ -7,6 +7,7 @@ Small Magisk modules used on a rooted Galaxy Watch 4 (SM-R870). Used on One UI 8
 | `vending-trim` | Keeps the Play Store out of the background |
 | `idle-reaper` | Kills launcher apps that have been in the background for 5 minutes |
 | `adb-wifi-keep` | Keeps Wi-Fi on and ADB on TCP 5555 with key authentication, switched with the Action button |
+| `charge-limit` | Stops charging at 90% and resumes at 85%, adjustable at runtime through a config file |
 
 Build the zips with `./build.sh` (output in `out/`), then install them with `magisk --install-module <zip>` as root or from the Magisk app, and reboot.
 
@@ -48,3 +49,37 @@ Off: the settings saved when it was switched on are put back and adbd stops list
 The state lives in `/data/adb/adb-wifi-keep/` (`enabled`, `saved`), outside the module directory, so updating the module keeps it. Removing the module while on restores the settings after the next boot.
 
 Battery: Wi-Fi stays on, and an open ADB connection wakes the SoC on every TCP ACK from the computer. Run `adb disconnect` when you are not working.
+
+## charge-limit
+
+The kernel on this watch has no charge limit node (no `charge_control_*`, no `batt_full_capacity`; `store_mode` has fixed limits). The battery driver does have `batt_slate_mode`: writing `1` stops charging while the watch stays on the charger (status `Discharging`), and `0` resumes it. This module drives that switch: at `LIMIT` percent while charging it writes `1`, at `RESUME` percent or below it writes `0`, and in between it keeps the current state.
+
+Nothing polls. `service.sh` runs one shell loop blocked on a FIFO, fed by two busybox applets blocked in the kernel:
+
+- `busybox uevent`: one line per `change` event of `/devices/platform/battery/power_supply/battery`, which the driver sends when capacity or status changes.
+- `busybox inotifyd`: one line per change in `/data/adb/charge-limit/` and per `disable` or `remove` flag Magisk creates or deletes in the module directory.
+
+Every line re-reads the capacity and status from sysfs and re-evaluates, so a config change applies at once.
+
+Safety:
+
+- Limit switched off (`ENABLED=0`, the module disabled in Magisk, or marked for removal) means slate mode `0`.
+- If either applet exits, or the loop gets `TERM`, `INT` or `HUP`, slate mode goes back to `0` before the loop ends. A `SIGKILL` of the loop itself cannot be caught; slate mode then stays as it was until the next reboot or until `service.sh` starts again.
+- Slate mode does not survive a reboot; `service.sh` evaluates once at boot. `uninstall.sh` writes `0` and deletes the config directory.
+- Starting `service.sh` again replaces the running loop.
+
+### Config file
+
+`/data/adb/charge-limit/config`, owned by root, one `KEY=value` per line; other lines are ignored, the last occurrence of a key wins. A missing file or key means the default.
+
+| Key | Values | Default |
+|---|---|---|
+| `ENABLED` | `1` limit on, `0` limit off (charging never blocked) | `1` |
+| `LIMIT` | stop charging at this percentage, clamped to 80–95 | `90` |
+| `RESUME` | resume charging at or below this percentage, clamped to 50–`LIMIT`−1 | `LIMIT`−5 |
+
+A value that is not a plain number counts as missing. An app writes it as root, for example `su -c 'printf "ENABLED=1\nLIMIT=85\nRESUME=80\n" > /data/adb/charge-limit/config'`; writing to a temporary file in the same directory and renaming it also works.
+
+The values in effect and the current slate state are in `/dev/charge-limit/status`, for example `enabled=1 limit=90 resume=85 slate=1`, or `stopped slate=0` when the loop is not running. Transitions are logged under the `charge-limit` logcat tag.
+
+Battery: the loop and the applets sleep in the kernel; they run only when the battery driver sends an event (a capacity or status change) or the config changes. Each battery event starts one short `sh` for filtering. Nothing wakes the watch from suspend.
