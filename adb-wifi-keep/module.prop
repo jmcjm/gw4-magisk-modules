@@ -1,0 +1,6 @@
+id=adb-wifi-keep
+name=ADB over Wi-Fi keeper (Wear OS)
+version=1.0
+versionCode=1
+author=jmc
+description=[OFF] Keeps Wi-Fi on and adbd on TCP 5555 with key authentication. Toggle with the Action button.
