@@ -50,15 +50,10 @@ The state lives in `/data/adb/adb-wifi-keep/` (`enabled`, `saved`), outside the 
 
 Battery: Wi-Fi stays on, and an open ADB connection wakes the SoC on every TCP ACK from the computer. Run `adb disconnect` when you are not working.
 
-
 ## rotation-lock
 
 On One UI 6 Watch `accelerometer_rotation` turns itself back on: the settings history shows it written by `system_server` with its default value 1, not by the user. What resets it is not known.
 
-- `service.sh`, after boot: sets `accelerometer_rotation` to 0, then checks it every 5 minutes and turns it off again when it is on.
-- Every reset it undoes is logged under the `rotation-lock` logcat tag with the uptime, so the log shows whether it happens only at boot or also later.
-- `sleep` does not wake the watch from suspend.
+`service.sh` sets `accelerometer_rotation` to 0 once after every boot and exits. A reset while the watch is running stays until the next boot.
 
 Removing the module leaves the setting as it is.
-
-Verified without a reboot: with auto-rotate switched on, the script turned it off within a second and logged it.
