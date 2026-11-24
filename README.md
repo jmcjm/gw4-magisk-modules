@@ -7,6 +7,7 @@ Small Magisk modules used on a rooted Galaxy Watch 4 (SM-R870). Used on One UI 8
 | `vending-trim` | Keeps the Play Store out of the background |
 | `idle-reaper` | Kills launcher apps that have been in the background for 5 minutes |
 | `adb-wifi-keep` | Keeps Wi-Fi on and ADB on TCP 5555 with key authentication, switched with the Action button |
+| `rotation-lock` | Keeps auto-rotate off |
 
 Build the zips with `./build.sh` (output in `out/`), then install them with `magisk --install-module <zip>` as root or from the Magisk app, and reboot.
 
@@ -49,3 +50,15 @@ The state lives in `/data/adb/adb-wifi-keep/` (`enabled`, `saved`), outside the 
 
 Battery: Wi-Fi stays on, and an open ADB connection wakes the SoC on every TCP ACK from the computer. Run `adb disconnect` when you are not working.
 
+
+## rotation-lock
+
+On One UI 6 Watch `accelerometer_rotation` turns itself back on: the settings history shows it written by `system_server` with its default value 1, not by the user. What resets it is not known.
+
+- `service.sh`, after boot: sets `accelerometer_rotation` to 0, then checks it every 5 minutes and turns it off again when it is on.
+- Every reset it undoes is logged under the `rotation-lock` logcat tag with the uptime, so the log shows whether it happens only at boot or also later.
+- `sleep` does not wake the watch from suspend.
+
+Removing the module leaves the setting as it is.
+
+Verified without a reboot: with auto-rotate switched on, the script turned it off within a second and logged it.
